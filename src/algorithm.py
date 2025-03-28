@@ -1,0 +1,107 @@
+import itertools
+import random
+import math
+
+from src.geometry import Environment, Graph
+
+
+def algorithm(env: Environment, k: float, alpha: float) -> Graph:
+    if k <= 1:
+        raise ValueError("k must be greater than 1 but was %f" % k)
+    if alpha <= 1:
+        raise ValueError("alpha must be greater than 1 but was %f" % alpha)
+
+    # Reduced visibility graph
+    g_free = compute_reduced_visibility_graph(env)
+
+    ellipse_heuristic = g_free.path_distance(env.start, env.goal)
+
+    # Remove edges that are guaranteed to not lie on the optimal path
+    g_pruned = prune_suboptimal_edges(env, g_free, ellipse_heuristic)
+
+    # Add paths through uncertain regions
+    g_shortcuts = add_shortcut_edges(env, g_pruned, k, ellipse_heuristic)
+
+    # Recovery paths (split edges at intersections)
+    g_recovery = split_recovery_points(g_shortcuts)
+
+    # Remove redundant edges
+    g_final = optimize_redundant_edges(alpha, g_recovery)
+
+    return g_final
+
+
+def compute_reduced_visibility_graph(env: Environment) -> Graph:
+    # TODO: vertices bordering free space
+    v_free = set()
+    # TODO: edges with traversability 1
+    e_free = set()
+    g_free = Graph(v_free, e_free)
+    return g_free
+
+
+def prune_suboptimal_edges(env: Environment, g_free: Graph, ellipse_heuristic: float) -> Graph:
+    g_pruned = g_free.copy()
+    for v in g_free.vertices():
+        if g_free.path_distance(env.start, v) + g_free.path_distance(v, env.goal) > ellipse_heuristic:
+            g_pruned.remove_vertex(v)
+    return g_pruned
+
+
+def add_shortcut_edges(env: Environment, g_pruned: Graph, k: float, ellipse_heuristic: float) -> Graph:
+    # The set of all regions represented in g_pruned
+    # NOTE: some regions may have been pruned if they're far from the optimal path
+    regions = set()
+    for region in env.regions:
+        # If any of region's vertices are in graph, add it
+        for v in region.vertices:
+            if v in g_pruned:
+                regions.add(region)
+                break
+
+    # The probability that all regions in the ellipse heuristic are traversable
+    rho_b = math.prod((1 - r.traversability) for r in regions)
+
+    g_shortcuts = g_pruned.copy()
+    # Test all possible edges and add the ones where gamma > k
+    for v1, v2 in itertools.combinations(g_pruned.vertices, 2):
+        # A heuristic ratio based on how 'useful' the edge is
+        # If it's likely to be traversable or much shorter, add it
+        gamma = ellipse_heuristic / (rho_b * ellipse_heuristic + (1 - rho_b) * v1.distance_to(v2))
+        if gamma > k:
+            g_shortcuts.add_edge(v1, v2)
+
+    return g_shortcuts
+
+
+def split_recovery_points(g_shortcuts: Graph) -> Graph:
+    g_recovery = g_shortcuts.copy()
+    for e in g_recovery.edges():
+        g_recovery.split_intersecting_edges(e)
+    return g_recovery
+
+
+def optimize_redundant_edges(alpha: float, g_recovery: Graph) -> Graph:
+    g_final = g_recovery.copy()
+
+    shuffled_edges = g_final.edges
+    random.shuffle(shuffled_edges)
+    for e in shuffled_edges:
+        if e not in g_final.edges():
+            continue
+
+        u, v = e
+        duv = u.distance_to(v)
+
+        # Remove all edges (w, v) where detouring through u
+        # doesn't increase the path distance significantly
+        for w in g_final.vertices():
+            if (w, u) in g_final.edges() and (w, v) in g_final.edges():
+                dwu = w.distance_to(u)
+                dwv = w.distance_to(v)
+                if (dwu + duv) / dwv < alpha:
+                    g_final.remove_edge((w, v))
+                elif (dwv + duv) / dwu < alpha:
+                    g_final.remove_edge((w, u))
+
+    return g_final
