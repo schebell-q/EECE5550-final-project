@@ -11,7 +11,7 @@ def algorithm(env: Environment, k: float, alpha: float) -> Graph:
     if alpha <= 1:
         raise ValueError("alpha must be greater than 1 but was %f" % alpha)
 
-    # Reduced visibility graph
+    # Reduced visibility graph, or free-space graph
     g_free = compute_reduced_visibility_graph(env)
 
     ellipse_heuristic = g_free.path_distance(env.start, env.goal)
@@ -32,11 +32,18 @@ def algorithm(env: Environment, k: float, alpha: float) -> Graph:
 
 
 def compute_reduced_visibility_graph(env: Environment) -> Graph:
-    # TODO: vertices bordering free space
-    v_free = set()
-    # TODO: edges with traversability 1
+    v_free = set(range(len(env.points)))
+
+    # Prune edges that pass inside regions
     e_free = set()
-    g_free = Graph(v_free, e_free)
+    for e in itertools.combinations(v_free, 2):
+        v1, v2 = e
+        if v2 < v1:
+            continue
+        if not env.regions_intersected_by_edge(e):
+            e_free.add(e)
+
+    g_free = Graph(env, v_free, e_free)
     return g_free
 
 
@@ -95,7 +102,7 @@ def optimize_redundant_edges(alpha: float, g_recovery: Graph) -> Graph:
 
         # Remove all edges (w, v) where detouring through u
         # doesn't increase the path distance significantly
-        for w in g_final.vertices():
+        for w in g_final.points():
             if (w, u) in g_final.edges() and (w, v) in g_final.edges():
                 dwu = w.distance_to(u)
                 dwv = w.distance_to(v)
