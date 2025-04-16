@@ -123,9 +123,9 @@ class Environment:
             return None, False
 
         t = q_minus_p_cross_s / r_cross_s
-        # u = q_minus_p_cross_r / r_cross_s
+        u = q_minus_p_cross_r / r_cross_s
 
-        if t < 0 or t > 1:
+        if t < 0 or t > 1 or u < 0 or u > 1:
             return None, False
 
         intersected_at_endpoint = t < INTERSECTION_EPS or t > 1 - INTERSECTION_EPS
