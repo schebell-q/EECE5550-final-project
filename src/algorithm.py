@@ -74,12 +74,13 @@ def add_shortcut_edges(env: Environment, g_pruned: Graph, k: float, ellipse_heur
                 regions.add(region)
                 break
 
-    # The probability that all regions in the ellipse heuristic are traversable
-    rho_b = math.prod((1 - r.traversability) for r in regions)
-
     g_shortcuts = g_pruned.copy()
     # Test all possible edges and add the ones where gamma > k
     for v1, v2 in itertools.combinations(g_pruned.vertices, 2):
+        # The probability that all regions intersected by the shortcut are untraversable
+        regions = env.regions_intersected_by_edge((v1, v2))
+        rho_b = math.prod((1 - r.traversability) for r in regions)
+
         # A heuristic ratio based on how 'useful' the edge is
         # If it's likely to be traversable or much shorter, add it
         distance = env.distance_between(v1, v2)
