@@ -48,4 +48,4 @@ def plot_all_graphs(env_name: str, env: Environment, k: float, alpha: float):
 
 def test_plot_all_graphs():
     plot_all_graphs("basic", make_basic_env(), 1.1, 2)
-    plot_all_graphs("long_toy", make_long_toy_env(), 10, 2)
+    plot_all_graphs("long_toy", make_long_toy_env(), 4.0, 1.5)

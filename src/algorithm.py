@@ -58,7 +58,7 @@ def compute_reduced_visibility_graph(env: Environment) -> Graph:
 def prune_suboptimal_edges(env: Environment, g_free: Graph, ellipse_heuristic: float) -> Graph:
     g_pruned = g_free.copy()
     for v in g_free.vertices:
-        if g_free.path_distance(env.start, v) + g_free.path_distance(v, env.goal) > ellipse_heuristic:
+        if env.distance_between(env.start, v) + env.distance_between(v, env.goal) > ellipse_heuristic:
             g_pruned.remove_vertex(v)
     return g_pruned
 
