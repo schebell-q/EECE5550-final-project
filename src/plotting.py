@@ -31,7 +31,7 @@ def plot_environment(env: Environment, fig: go.Figure = None, ellipse_heuristic:
                 x=region_pts[:, 0], y=region_pts[:, 1],
                 name=f"Region {i + 1}, {region.traversability * 100:.0f}%", fill="toself",
                 line=dict(color="red"),
-                fillcolor=f"rgba(255,0,0,{region.traversability})",
+                fillcolor=f"rgba(255,0,0,{1 - region.traversability})",
                 text=vertices, hovertemplate="vertex %{text}",
             )
         )
