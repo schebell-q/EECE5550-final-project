@@ -24,13 +24,15 @@ def plot_environment(env: Environment, fig: go.Figure = None, ellipse_heuristic:
 
     for i, region in enumerate(env.regions):
         # The polygon needs to be closed, so add the first point again at the end
-        region_pts = env.points[[*region.vertices, region.vertices[0]]]
+        vertices = [*region.vertices, region.vertices[0]]
+        region_pts = env.points[vertices]
         fig.add_trace(
             go.Scatter(
                 x=region_pts[:, 0], y=region_pts[:, 1],
                 name=f"Region {i + 1}, {region.traversability * 100:.0f}%", fill="toself",
                 line=dict(color="red"),
-                fillcolor=f"rgba(255,0,0,{region.traversability})"
+                fillcolor=f"rgba(255,0,0,{region.traversability})",
+                text=vertices, hovertemplate="vertex %{text}",
             )
         )
 
