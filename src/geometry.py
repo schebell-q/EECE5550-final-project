@@ -99,11 +99,14 @@ class Environment:
         for region in self.regions:
             # Regions must be convex, so both endpoints on the edge and non-adjacent means it passes inside
             if e[0] in region.vertices and e[1] in region.vertices:
-                v0_idx = region.vertices.index(e[0])
-                v1_idx = region.vertices.index(e[1])
-                if (v0_idx - v1_idx) % len(region.vertices) not in (1, len(region.vertices) - 1):
+                v1, v2 = e
+                if v1 > v2:
+                    v1, v2 = v2, v1
+                v1_idx = region.vertices.index(v1)
+                v2_idx = region.vertices.index(v2)
+                if not (abs(v1_idx - v2_idx) == 1 or v1_idx == 0 and v2_idx == len(region.vertices) - 1):
                     intersected_regions.append(region)
-                    break
+                    continue
 
             # If at least one of the endpoints is not on the edge,
             # at least one edge would be intersected if it passes inside
@@ -112,7 +115,7 @@ class Environment:
                 v2 = region.vertices[(i + 1) % len(region.vertices)]
                 if self.intersect_edges(e, (v1, v2)):
                     intersected_regions.append(region)
-                    break
+                    continue
         return intersected_regions
 
 
@@ -156,7 +159,8 @@ class Graph:
         if v < u:
             v, u = u, v
         self._edges.add((u, v))
-        self._distances = None
+        self._vertices.add(u)
+        self._vertices.add(v)
 
     def remove_edge(self, e: Edge):
         u, v = e

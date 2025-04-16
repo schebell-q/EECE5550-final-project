@@ -50,7 +50,7 @@ def compute_reduced_visibility_graph(env: Environment) -> Graph:
     for e in itertools.combinations(v_free, 2):
         v1, v2 = e
         if v2 < v1:
-            continue
+            raise ValueError(f"v1 should always be less than v2 but they were: {v1}, {v2}")
         if not env.regions_intersected_by_edge(e):
             e_free.add(e)
 
@@ -88,7 +88,7 @@ def add_shortcut_edges(env: Environment, g_pruned: Graph, k: float, ellipse_heur
         distance = env.distance_between(v1, v2)
         gamma = ellipse_heuristic / (rho_b * ellipse_heuristic + (1 - rho_b) * distance)
         if gamma > k:
-            g_shortcuts.add_edge(v1, v2)
+            g_shortcuts.add_edge((v1, v2))
 
     return g_shortcuts
 
