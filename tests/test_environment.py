@@ -73,3 +73,13 @@ def test_distance_between():
     assert env.distance_between(0, 1) == 3
     assert env.distance_between(2, 3) == 1
     assert env.distance_between(4, 1) == np.sqrt(2)
+
+
+def test_add_redundant_points():
+    env = make_basic_env()
+    assert env._n_points == 6
+    assert env.add_point((0, 0.00001)) == 0
+    assert env.add_point((2.999999, -0.00001)) == 1
+    assert env._n_points == 6
+    assert env.add_point((1, 0)) == 6
+    assert env._n_points == 7

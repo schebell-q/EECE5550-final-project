@@ -19,14 +19,11 @@ def algorithm(env: Environment, k: float, alpha: float, return_all_graphs=False)
     # Remove edges that are guaranteed to not lie on the optimal path
     g_pruned = prune_suboptimal_edges(env, g_free, ellipse_heuristic)
 
-    # Add paths through uncertain regions
+    # Add paths through uncertain regions, split at region boundaries to make recovery paths
     g_shortcuts = add_shortcut_edges(env, g_pruned, k, ellipse_heuristic)
 
-    # Recovery paths (split edges at intersections)
-    g_recovery = split_recovery_points(g_shortcuts)
-
     # Remove redundant edges
-    g_final = optimize_redundant_edges(env, alpha, g_recovery)
+    g_final = optimize_redundant_edges(env, alpha, g_shortcuts)
 
     if return_all_graphs:
         return {
@@ -36,7 +33,6 @@ def algorithm(env: Environment, k: float, alpha: float, return_all_graphs=False)
             "ellipse_heuristic": ellipse_heuristic,
             "g_pruned": g_pruned,
             "g_shortcuts": g_shortcuts,
-            "g_recovery": g_recovery,
             "g_final": g_final,
         }
     return g_final
@@ -45,13 +41,14 @@ def algorithm(env: Environment, k: float, alpha: float, return_all_graphs=False)
 def compute_reduced_visibility_graph(env: Environment) -> Graph:
     v_free = set(range(len(env.points)))
 
-    # Prune edges that pass inside regions
+    # Prune edges that intersect any region
     e_free = set()
     for e in itertools.combinations(v_free, 2):
         v1, v2 = e
         if v2 < v1:
             raise ValueError(f"v1 should always be less than v2 but they were: {v1}, {v2}")
-        if not env.regions_intersected_by_edge(e):
+        if next(env.regions_intersected_by_edge(e), None) is None:
+            # Add the edge since it doesn't intersect any regions
             e_free.add(e)
 
     g_free = Graph(env, v_free, e_free)
@@ -88,16 +85,9 @@ def add_shortcut_edges(env: Environment, g_pruned: Graph, k: float, ellipse_heur
         distance = env.distance_between(v1, v2)
         gamma = ellipse_heuristic / (rho_b * ellipse_heuristic + (1 - rho_b) * distance)
         if gamma > k:
-            g_shortcuts.add_edge((v1, v2))
+            g_shortcuts.add_edge_and_split((v1, v2))
 
     return g_shortcuts
-
-
-def split_recovery_points(g_shortcuts: Graph) -> Graph:
-    g_recovery = g_shortcuts.copy()
-    for e in g_recovery.edges:
-        g_recovery.split_intersecting_edges(e)
-    return g_recovery
 
 
 def optimize_redundant_edges(env, alpha: float, g_recovery: Graph) -> Graph:

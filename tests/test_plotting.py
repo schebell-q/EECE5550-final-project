@@ -36,7 +36,6 @@ def plot_all_graphs(env_name: str, env: Environment, k: float, alpha: float):
         ("g_free", False),
         ("g_pruned", True),
         ("g_shortcuts", True),
-        ("g_recovery", False),
         ("g_final", False),
     ]):
         h = ellipse_heurustic if plot_ellipse else None
@@ -49,4 +48,4 @@ def plot_all_graphs(env_name: str, env: Environment, k: float, alpha: float):
 
 def test_plot_all_graphs():
     plot_all_graphs("basic", make_basic_env(), 1.1, 2)
-    plot_all_graphs("long_toy", make_long_toy_env(), 1.5, 2)
+    plot_all_graphs("long_toy", make_long_toy_env(), 10, 2)

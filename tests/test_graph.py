@@ -102,8 +102,11 @@ def test_path_distance():
 def test_split_edges():
     g_free = make_freespace_graph()
     assert len(g_free.edges) == 8
-    g_free.split_intersecting_edges((0, 1))
-    assert len(g_free.edges) == 10
+    old_edges = g_free.edges.copy()
+    g_free.add_edge_and_split((0, 1))
+    new_edges = g_free.edges.copy()
+    assert len(old_edges.difference(new_edges)) == 2
+    assert len(new_edges.difference(old_edges)) == 7
 
 
 def test_edge_order():
