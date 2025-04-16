@@ -16,7 +16,7 @@ def plot_environment(env: Environment, fig: go.Figure = None, ellipse_heuristic:
         go.Scatter(
             x=[start[0], goal[0]], y=[start[1], goal[1]],
             name="Start and Goal", mode="markers",
-            marker=dict(color="red", size=20)
+            marker=dict(color="black", size=30)
         )
     )
     fig.update_xaxes(showgrid=False)
@@ -28,7 +28,7 @@ def plot_environment(env: Environment, fig: go.Figure = None, ellipse_heuristic:
         fig.add_trace(
             go.Scatter(
                 x=region_pts[:, 0], y=region_pts[:, 1],
-                name=f"Region {i + 1}", fill="toself",
+                name=f"Region {i + 1}, {region.traversability * 100:.0f}%", fill="toself",
                 line=dict(color="red"),
                 fillcolor=f"rgba(255,0,0,{region.traversability})"
             )
