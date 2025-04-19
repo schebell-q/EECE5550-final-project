@@ -54,16 +54,19 @@ def make_long_toy_env() -> Environment:
         [1, 16],  # 31
         [-4, 16],  # 32
         [-4, 15],  # 33
-    ])
+    ], dtype="float64")
+    points[:, 1] /= 2
+    low_traversability = 0.2
+    high_traversability = 0.8
     regions = {
-        Region((2, 3, 4, 5), 0.75),
-        Region((6, 7, 8, 9), 0.75),
-        Region((10, 11, 12, 13), 0.75),
-        Region((14, 15, 16, 17), 0.75),
-        Region((18, 19, 20, 21), 0.25),
-        Region((22, 23, 24, 25), 0.25),
-        Region((26, 27, 28, 29), 0.25),
-        Region((30, 31, 32, 33), 0.25),
+        Region((2, 3, 4, 5), high_traversability),
+        Region((6, 7, 8, 9), high_traversability),
+        Region((10, 11, 12, 13), high_traversability),
+        Region((14, 15, 16, 17), high_traversability),
+        Region((18, 19, 20, 21), low_traversability),
+        Region((22, 23, 24, 25), low_traversability),
+        Region((26, 27, 28, 29), low_traversability),
+        Region((30, 31, 32, 33), low_traversability),
     }
     return Environment(0, 1, points, regions)
 
