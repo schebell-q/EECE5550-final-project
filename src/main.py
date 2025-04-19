@@ -16,6 +16,8 @@ OUTPUT_DIR = Path("main_plots")
 def sweep_ks(name: str, env_maker: Callable[[], Environment]):
     ks = [2, 3, 4, 5, 6, np.inf]
     alpha = 1.5
+    
+    report_file = open(OUTPUT_DIR / "report.txt", "w")
 
     for k in ks:
         env = env_maker()
@@ -33,13 +35,14 @@ def sweep_ks(name: str, env_maker: Callable[[], Environment]):
         gen_time = gen_end_time - gen_start_time
         plan_time = plan_end_time - plan_start_time
 
-        print(name, "k =", k)
-        print("\tTgen", gen_time)
-        print("\t|V|", n_vertices)
-        print("\t|E|", n_edges)
-        print("\tPath", path_length)
-        print("\tTplan", plan_time)
-        print()
+        report_file.write(f"""{name} k = {k}
+\tTgen {gen_time}
+\t|V| {n_vertices}
+\t|E| {n_edges}
+\tPath {path_length}
+\tTplan {plan_time}
+
+""")
 
         fig = plot_environment(env)
         fig = plot_graph(env, g_final, fig=fig)

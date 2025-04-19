@@ -4,3 +4,4 @@ __pycache__/
 # Output files
 *.html
 *.png
+*.txt
