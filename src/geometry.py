@@ -61,7 +61,7 @@ class Environment:
         n, d = points.shape
         if d != 2:
             raise ValueError("points must have shape Nx2 but was Nx%i" % d)
-        self.points = points
+        self.points = points.astype("float64")
         self._n_points = n
 
     def distance_between(self, v1: Vertex, v2: Vertex):
@@ -153,6 +153,20 @@ class Environment:
                 if intersection and not intersected_at_endpoint:
                     yield region
                     continue
+
+    def regions_within_ellipse(self, e: Edge, ellipse_dist: float) -> Generator[Region]:
+        for region in self.regions:
+            # If either vertex is in the region, the region is definitely within the ellipse
+            v1, v2 = e
+            if v1 in region.vertices and v2 in region.vertices:
+                yield region
+                continue
+
+            # If the shortest path from v1 to v2 through vr is in the ellipse, then the region is in the ellipse
+            for vr in region.vertices:
+                if self.distance_between(v1, vr) + self.distance_between(v2, vr) <= ellipse_dist:
+                    yield region
+                    break
 
 
 class Graph:

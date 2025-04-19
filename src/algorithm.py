@@ -20,7 +20,7 @@ def algorithm(env: Environment, k: float, alpha: float, return_all_graphs=False)
     g_pruned = prune_suboptimal_edges(env, g_free, ellipse_heuristic)
 
     # Add paths through uncertain regions, split at region boundaries to make recovery paths
-    g_shortcuts = add_shortcut_edges(env, g_pruned, k, ellipse_heuristic)
+    g_shortcuts = add_shortcut_edges(env, g_pruned, k, g_free)
 
     # Remove redundant edges
     g_final = optimize_redundant_edges(env, alpha, g_shortcuts)
@@ -63,7 +63,7 @@ def prune_suboptimal_edges(env: Environment, g_free: Graph, ellipse_heuristic: f
     return g_pruned
 
 
-def add_shortcut_edges(env: Environment, g_pruned: Graph, k: float, ellipse_heuristic: float) -> Graph:
+def add_shortcut_edges(env: Environment, g_pruned: Graph, k: float, g_free: Graph) -> Graph:
     # The set of all regions represented in g_pruned
     # NOTE: some regions may have been pruned if they're far from the optimal path
     regions = set()
@@ -77,13 +77,18 @@ def add_shortcut_edges(env: Environment, g_pruned: Graph, k: float, ellipse_heur
     g_shortcuts = g_pruned.copy()
     # Test all possible edges and add the ones where gamma > k
     for v1, v2 in itertools.combinations(g_pruned.vertices, 2):
-        # The probability that all regions intersected by the shortcut are untraversable
-        regions = env.regions_intersected_by_edge((v1, v2))
+        if (v1, v2) in g_pruned.edges:
+            continue
+
+        distance = env.distance_between(v1, v2)
+        ellipse_heuristic = g_free.path_distance(v1, v2)
+
+        # The probability that all regions relevant to the shortcut are untraversable
+        regions = env.regions_within_ellipse((v1, v2), ellipse_heuristic)
         rho_b = math.prod((1 - r.traversability) for r in regions)
 
         # A heuristic ratio based on how 'useful' the edge is
         # If it's likely to be traversable or much shorter, add it
-        distance = env.distance_between(v1, v2)
         gamma = ellipse_heuristic / (rho_b * ellipse_heuristic + (1 - rho_b) * distance)
         if gamma > k:
             g_shortcuts.add_edge_and_split((v1, v2))
