@@ -18,6 +18,8 @@ def sweep_ks(name: str, env_maker: Callable[[], Environment]):
     alpha = 1.5
     
     report_file = open(OUTPUT_DIR / "report.txt", "w")
+    data_file = open(OUTPUT_DIR / "data.csv", "w")
+    data_file.write("k,Tgen,|V|,|E|,Path cost,Tplan\n")
 
     for k in ks:
         env = env_maker()
@@ -43,6 +45,7 @@ def sweep_ks(name: str, env_maker: Callable[[], Environment]):
 \tTplan {plan_time}
 
 """)
+        data_file.write(f"{k},{gen_time},{n_vertices},{n_edges},{path_length},{plan_time}\n")
 
         fig = plot_environment(env)
         fig = plot_graph(env, g_final, fig=fig)
