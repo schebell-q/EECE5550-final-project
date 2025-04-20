@@ -35,7 +35,7 @@ def plot_all_graphs(env_name: str, env: Environment, k: float, alpha: float):
     for i, (graph_name, plot_ellipse) in enumerate([
         ("g_free", False),
         ("g_pruned", True),
-        ("g_shortcuts", True),
+        ("g_shortcuts", False),
         ("g_final", False),
     ]):
         h = ellipse_heurustic if plot_ellipse else None
