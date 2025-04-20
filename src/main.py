@@ -14,7 +14,7 @@ OUTPUT_DIR = Path("main_plots")
 
 
 def sweep_ks(name: str, env_maker: Callable[[], Environment]):
-    ks = [2, 3, 4, 5, 6, np.inf]
+    ks = [1.1, 1.5, 2, 2.5, 3, np.inf]
     alpha = 1.5
     
     report_file = open(OUTPUT_DIR / "report.txt", "w")
