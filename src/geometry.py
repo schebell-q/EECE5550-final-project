@@ -1,4 +1,3 @@
-from dataclasses import dataclass
 from heapq import heappop, heappush
 from typing import Optional, Generator
 
